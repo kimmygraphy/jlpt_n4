@@ -411,9 +411,9 @@ function getWordId(w){return w.w+'|'+w.r;}
 
 function updateDday(){
   const t=new Date();t.setHours(0,0,0,0);
-  const d=Math.ceil((new Date('2026-07-06')-t)/(864e5));
+  const d=Math.ceil((new Date('2026-07-05')-t)/(864e5));
   const el=document.getElementById('dday-counter');
-  el.textContent=d>0?`D-${d} | 7/6 JLPT`:d===0?'🎌 오늘이 시험일!':`D+${Math.abs(d)} | 시험 후`;
+  el.textContent=d>0?`D-${d} | 7/5 JLPT`:d===0?'🎌 오늘이 시험일!':`D+${Math.abs(d)} | 시험 후`;
 }
 
 function updateProgress(){
