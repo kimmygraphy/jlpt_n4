@@ -113,6 +113,8 @@ body { font-family: 'Noto Sans KR', 'Noto Sans JP', sans-serif; background: var(
 .flash-front { background: var(--surface2); }
 .flash-back { background: var(--surface3); transform: rotateY(180deg); }
 .flash-word { font-family: 'Noto Sans JP', sans-serif; font-size: 44px; font-weight: 700; line-height: 1.2; text-align: center; }
+.flash-word ruby { ruby-position: over; }
+.flash-word rt { font-size: 16px; font-weight: 500; color: var(--text3); font-family: 'Noto Sans JP', sans-serif; }
 .flash-pos { font-size: 12px; }
 .flash-group-tag { font-size: 11px; color: var(--text3); background: var(--surface3); padding: 3px 10px; border-radius: 99px; border: 1px solid var(--border); font-family: 'Noto Sans JP', sans-serif; }
 .flash-hint { font-size: 11px; color: var(--text3); margin-top: 8px; }
@@ -180,6 +182,7 @@ button { border: none; outline: none; }
       <button class="chip" data-flash-filter="unmemorized" onclick="setFlashFilter('unmemorized',this)">미암기</button>
       <button class="chip" data-flash-filter="memorized" onclick="setFlashFilter('memorized',this)">암기완료</button>
       <button class="chip" onclick="shuffleFlash()">🔀 셔플</button>
+      <button class="chip" id="furigana-toggle" onclick="toggleFurigana()">🈶 후리가나</button>
       <span class="flash-stat" id="flash-stat">0 / 0</span>
     </div>
     <div class="filters" style="position:static;">
@@ -428,7 +431,7 @@ const SPECIAL_GROUPS=[
 const GROUPS=[...KANJI_GROUPS.map(g=>({...g,level:calcLevel(g.words.length)})),...SPECIAL_GROUPS];
 GROUPS.forEach(g=>g.words.forEach(w=>{const d=DAY_MAP[w.w];if(d!==undefined)w.day=d;}));
 
-let memorized={},flashQueue=[],flashIndex=0,flashFilter='all',flashDayFilter=0,isFlipped=false;
+let memorized={},flashQueue=[],flashIndex=0,flashFilter='all',flashDayFilter=0,isFlipped=false,furiganaOn=false;
 const activeFilters={level:new Set(['S','A','B','기타한자','히라가나','부사','외래어']),pos:new Set(['명사','동사','い형','な형','부사','외래어'])};
 
 function loadMemorized(){try{const s=localStorage.getItem('n4_memorized');if(s)memorized=JSON.parse(s);}catch(e){}}
@@ -565,6 +568,12 @@ function setFlashFilter(val,btn){
   btn.classList.add('active');buildFlashQueue();renderFlashCard();
 }
 
+function toggleFurigana(){
+  furiganaOn=!furiganaOn;
+  document.getElementById('furigana-toggle').classList.toggle('active',furiganaOn);
+  renderFlashCard();
+}
+
 function shuffleFlash(){
   for(let i=flashQueue.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[flashQueue[i],flashQueue[j]]=[flashQueue[j],flashQueue[i]];}
   flashIndex=0;renderFlashCard();
@@ -579,7 +588,9 @@ function renderFlashCard(){
   const w=flashQueue[flashIndex],wid=getWordId(w);
   const isSp=['기타한자','히라가나','부사','외래어'].includes(w.groupLevel);
   document.getElementById('f-group').textContent=isSp?w.groupLevel:`${w.groupId} 그룹 (${w.groupLabel})`;
-  document.getElementById('f-word').textContent=w.w;
+  const wordEl=document.getElementById('f-word');
+  if(furiganaOn&&w.r&&w.r!==w.w)wordEl.innerHTML=`<ruby>${w.w}<rt>${w.r}</rt></ruby>`;
+  else wordEl.textContent=w.w;
   document.getElementById('f-pos-front').innerHTML=`<span class="pos-badge pos-${w.pos}">${w.pos}</span>`;
   // ★ day tag on flash card
   const dayEl=document.getElementById('f-day-tag');
