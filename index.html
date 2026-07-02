@@ -178,6 +178,27 @@ button { border: none; outline: none; }
       <button class="chip" onclick="shuffleFlash()">🔀 셔플</button>
       <span class="flash-stat" id="flash-stat">0 / 0</span>
     </div>
+    <div class="filters" style="position:static;">
+      <div class="filter-row">
+        <span class="filter-label">등급</span>
+        <button class="chip s active" data-filter-group="level" data-value="S" onclick="toggleFilter(this)">S급</button>
+        <button class="chip a active" data-filter-group="level" data-value="A" onclick="toggleFilter(this)">A급</button>
+        <button class="chip b active" data-filter-group="level" data-value="B" onclick="toggleFilter(this)">B급</button>
+        <button class="chip active" data-filter-group="level" data-value="기타한자" onclick="toggleFilter(this)">기타한자</button>
+        <button class="chip active" data-filter-group="level" data-value="히라가나" onclick="toggleFilter(this)">히라가나</button>
+        <button class="chip active" data-filter-group="level" data-value="부사" onclick="toggleFilter(this)">부사</button>
+        <button class="chip active" data-filter-group="level" data-value="외래어" onclick="toggleFilter(this)">외래어</button>
+      </div>
+      <div class="filter-row">
+        <span class="filter-label">품사</span>
+        <button class="chip active" data-filter-group="pos" data-value="명사" onclick="toggleFilter(this)">명사</button>
+        <button class="chip active" data-filter-group="pos" data-value="동사" onclick="toggleFilter(this)">동사</button>
+        <button class="chip active" data-filter-group="pos" data-value="い형" onclick="toggleFilter(this)">い형</button>
+        <button class="chip active" data-filter-group="pos" data-value="な형" onclick="toggleFilter(this)">な형</button>
+        <button class="chip active" data-filter-group="pos" data-value="부사" onclick="toggleFilter(this)">부사</button>
+        <button class="chip active" data-filter-group="pos" data-value="외래어" onclick="toggleFilter(this)">외래어</button>
+      </div>
+    </div>
     <div class="flash-day-row" id="flash-day-row"></div>
     <div class="flash-card-wrap">
       <div class="flash-card" id="flash-card" onclick="flipCard()">
@@ -426,9 +447,11 @@ function updateProgress(){
 
 function toggleFilter(btn){
   const g=btn.dataset.filterGroup,v=btn.dataset.value;
-  if(activeFilters[g].has(v)){activeFilters[g].delete(v);btn.classList.remove('active');}
-  else{activeFilters[g].add(v);btn.classList.add('active');}
+  const on=!activeFilters[g].has(v);
+  if(on)activeFilters[g].add(v);else activeFilters[g].delete(v);
+  document.querySelectorAll(`[data-filter-group="${g}"][data-value="${v}"]`).forEach(b=>b.classList.toggle('active',on));
   applyFilters();
+  buildFlashQueue();renderFlashCard();
 }
 
 function applyFilters(){
@@ -490,6 +513,7 @@ function toggleWordMemorize(card,wid){
 function buildFlashQueue(){
   let all=[];
   GROUPS.forEach(g=>g.words.forEach(w=>all.push({...w,groupId:g.id,groupLabel:g.label,groupLevel:g.level})));
+  all=all.filter(w=>activeFilters.level.has(w.groupLevel)&&activeFilters.pos.has(w.pos));
   if(flashFilter==='unmemorized')all=all.filter(w=>!memorized[getWordId(w)]);
   else if(flashFilter==='memorized')all=all.filter(w=>!!memorized[getWordId(w)]);
   if(flashDayFilter>0)all=all.filter(w=>w.day===flashDayFilter);
